@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>RLVR Playground</title>
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+    .panel {
+      background: #020617;
+      border-radius: 14px;
+      padding: 24px 22px 22px;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    h2 {
+      margin: 0 0 4px;
+      font-size: 20px;
+      color: #f9fafb;
+    }
+    .subtitle {
+      margin: 0 0 18px;
+      font-size: 14px;
+      color: #9ca3af;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr);
+      gap: 22px;
+    }
+    @media (max-width: 760px) {
+      .layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      font-size: 13px;
+    }
+    .control-group {
+      padding: 10px 12px 11px;
+      border-radius: 10px;
+      background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.22), transparent 55%),
+                  rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(37, 99, 235, 0.5);
+    }
+    .control-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    .control-label {
+      font-weight: 500;
+      color: #d1d5db;
+      font-size: 13px;
+    }
+    .control-caption {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+    .control-value {
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      color: #bfdbfe;
+    }
+    input[type="range"] {
+      width: 100%;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 5px;
+      border-radius: 999px;
+      background: #020617;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #3b82f6;
+      border: 1px solid #dbeafe;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.45);
+      cursor: pointer;
+      margin-top: -4.5px;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #3b82f6;
+      border: 1px solid #dbeafe;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.45);
+      cursor: pointer;
+    }
+    input[type="range"]::-moz-range-track {
+      height: 5px;
+      border-radius: 999px;
+      background: #020617;
+    }
+    .control-footnote {
+      margin-top: 4px;
+      font-size: 11px;
+      color: #6b7280;
+    }
+    .viz {
+      padding: 10px 12px 12px;
+      border-radius: 12px;
+      background: radial-gradient(circle at top, rgba(45, 212, 191, 0.1), transparent 55%),
+                  radial-gradient(circle at bottom right, rgba(96, 165, 250, 0.18), transparent 60%),
+                  #020617;
+      border: 1px solid rgba(34, 197, 94, 0.4);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .viz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .viz-title {
+      font-size: 13px;
+      color: #d1fae5;
+      font-weight: 500;
+    }
+    .viz-meta {
+      font-size: 11px;
+      color: #a5b4fc;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+    .chart {
+      position: relative;
+      height: 190px;
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      padding: 4px 0 0;
+    }
+    .bar-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 4px;
+      min-width: 0;
+    }
+    .bar-track {
+      width: 100%;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      overflow: hidden;
+      height: 120px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-end;
+    }
+    .bar-inner {
+      width: 100%;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #22c55e, #15803d);
+      height: 15%;
+      transition: height 220ms ease-out, background 220ms ease-out;
+    }
+    .bar-label {
+      font-size: 10px;
+      color: #9ca3af;
+      font-variant-numeric: tabular-nums;
+    }
+    .bar-col.base .bar-inner {
+      background: linear-gradient(180deg, #60a5fa, #1d4ed8);
+    }
+    .bar-col.base .bar-label {
+      color: #bfdbfe;
+    }
+    .y-axis-labels {
+      position: absolute;
+      left: -2px;
+      top: 6px;
+      bottom: 36px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      font-size: 9px;
+      color: #6b7280;
+      pointer-events: none;
+    }
+    .y-axis-labels span {
+      transform: translateY(50%);
+    }
+    .summary {
+      margin-top: 4px;
+      padding: 8px 10px 6px;
+      border-radius: 9px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px dashed rgba(148, 163, 184, 0.4);
+      font-size: 11px;
+      color: #9ca3af;
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .summary-strong {
+      color: #d1fae5;
+    }
+    .summary-detail {
+      font-variant-numeric: tabular-nums;
+    }
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+      font-size: 10px;
+    }
+    .pill {
+      padding: 3px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.3), transparent 60%),
+                  rgba(15, 23, 42, 0.9);
+      color: #e5e7eb;
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+</head>
+<body>
+  <div class="panel" aria-label="RLVR playground">
+    <h2>RLVR Playground: how success concentrates</h2>
+    <p class="subtitle">
+      Adjust base accuracy, group size, and KL strength to see how a simple GRPO-style update concentrates probability mass on successful trajectories over RL steps for a toy math task.
+    </p>
+    <div class="layout">
+      <section class="controls" aria-label="RLVR controls">
+        <div class="control-group">
+          <div class="control-header">
+            <div>
+              <div class="control-label">Base accuracy</div>
+              <div class="control-caption">Probability the base policy solves the task.</div>
+            </div>
+            <div class="control-value" id="baseAccLabel">40%</div>
+          </div>
+          <input
+            id="baseAcc"
+            type="range"
+            min="0.1"
+            max="0.9"
+            step="0.05"
+            value="0.4"
+            aria-label="Base accuracy"
+          />
+          <div class="control-footnote">
+            Higher base accuracy means RLVR mainly <em>amplifies</em> existing reasoning skills.
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="control-header">
+            <div>
+              <div class="control-label">Group size K</div>
+              <div class="control-caption">How many trajectories are compared per GRPO step.</div>
+            </div>
+            <div class="control-value" id="groupSizeLabel">K = 4</div>
+          </div>
+          <input
+            id="groupSize"
+            type="range"
+            min="1"
+            max="16"
+            step="1"
+            value="4"
+            aria-label="Group size K"
+          />
+          <div class="control-footnote">
+            Larger K gives stronger selection pressure but more sampling cost.
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="control-header">
+            <div>
+              <div class="control-label">KL strength</div>
+              <div class="control-caption">How strongly updates stay close to the base policy.</div>
+            </div>
+            <div class="control-value" id="klLabel">0.6</div>
+          </div>
+          <input
+            id="klStrength"
+            type="range"
+            min="0"
+            max="2.0"
+            step="0.1"
+            value="0.6"
+            aria-label="KL strength"
+          />
+          <div class="control-footnote">
+            Stronger KL slows down learning but keeps the policy conservative.
+          </div>
+        </div>
+      </section>
+      <section class="viz" aria-label="Trajectory success over RL steps">
+        <div class="viz-header">
+          <div class="viz-title">Success probability over RL steps</div>
+          <div class="viz-meta" id="metaLabel">
+            Step&nbsp;0&nbsp;→&nbsp;10 &nbsp;·&nbsp; Δ=+0.00
+          </div>
+        </div>
+        <div class="chart">
+          <div class="y-axis-labels">
+            <span>100%</span>
+            <span>75%</span>
+            <span>50%</span>
+            <span>25%</span>
+          </div>
+          <div class="bar-col base">
+            <div class="bar-track">
+              <div class="bar-inner" data-step="0"></div>
+            </div>
+            <div class="bar-label">Base</div>
+          </div>
+          <div class="bar-col">
+            <div class="bar-track">
+              <div class="bar-inner" data-step="1"></div>
+            </div>
+            <div class="bar-label">1</div>
+          </div>
+          <div class="bar-col">
+            <div class="bar-track">
+              <div class="bar-inner" data-step="2"></div>
+            </div>
+            <div class="bar-label">2</div>
+          </div>
+          <div class="bar-col">
+            <div class="bar-track">
+              <div class="bar-inner" data-step="3"></div>
+            </div>
+            <div class="bar-label">3</div>
+          </div>
+          <div class="bar-col">
+            <div class="bar-track">
+              <div class="bar-inner" data-step="4"></div>
+            </div>
+            <div class="bar-label">4</div>
+          </div>
+          <div class="bar-col">
+            <div class="bar-track">
+              <div class="bar-inner" data-step="5"></div>
+            </div>
+            <div class="bar-label">5</div>
+          </div>
+          <div class="bar-col">
+            <div class="bar-track">
+              <div class="bar-inner" data-step="6"></div>
+            </div>
+            <div class="bar-label">6</div>
+          </div>
+          <div class="bar-col">
+            <div class="bar-track">
+              <div class="bar-inner" data-step="7"></div>
+            </div>
+            <div class="bar-label">7</div>
+          </div>
+          <div class="bar-col">
+            <div class="bar-track">
+              <div class="bar-inner" data-step="8"></div>
+            </div>
+            <div class="bar-label">8</div>
+          </div>
+          <div class="bar-col">
+            <div class="bar-track">
+              <div class="bar-inner" data-step="9"></div>
+            </div>
+            <div class="bar-label">9</div>
+          </div>
+          <div class="bar-col">
+            <div class="bar-track">
+              <div class="bar-inner" data-step="10"></div>
+            </div>
+            <div class="bar-label">10</div>
+          </div>
+        </div>
+        <div class="summary" id="summary">
+          <div class="summary-strong">Use the sliders to explore how quickly RLVR can amplify a base policy.</div>
+          <div class="summary-detail">
+            The base policy starts with a fixed success rate; the simulated GRPO-style update uses group comparisons and a KL term to push probability mass toward successful trajectories.
+          </div>
+        </div>
+        <div class="pill-row">
+          <div class="pill" id="pillSignal">Signal: —</div>
+          <div class="pill" id="pillMode">Regime: —</div>
+        </div>
+      </section>
+    </div>
+  </div>
+  <script>
+    const baseSlider = document.getElementById('baseAcc');
+    const baseLabel = document.getElementById('baseAccLabel');
+    const groupSlider = document.getElementById('groupSize');
+    const groupLabel = document.getElementById('groupSizeLabel');
+    const klSlider = document.getElementById('klStrength');
+    const klLabel = document.getElementById('klLabel');
+    const bars = Array.from(document.querySelectorAll('.bar-inner'));
+    const metaLabel = document.getElementById('metaLabel');
+    const summary = document.getElementById('summary');
+    const pillSignal = document.getElementById('pillSignal');
+    const pillMode = document.getElementById('pillMode');
+
+    function formatPercent(x) {
+      return Math.round(x * 100);
+    }
+
+    function simulate() {
+      const baseAcc = parseFloat(baseSlider.value);
+      const K = parseInt(groupSlider.value, 10);
+      const kl = parseFloat(klSlider.value);
+
+      baseLabel.textContent = formatPercent(baseAcc) + '%';
+      groupLabel.textContent = 'K = ' + K;
+      klLabel.textContent = kl.toFixed(1);
+
+      const steps = bars.length - 1;
+      let p = baseAcc;
+      const values = [p];
+
+      for (let t = 1; t <= steps; t++) {
+        const selection = 1 - Math.pow(1 - p, K);
+        const signal = selection - p;
+        const lr = 0.55 / (1 + kl);
+        p = p + lr * signal;
+        p = Math.max(0.001, Math.min(0.999, p));
+        values.push(p);
+      }
+
+      const base = values[0];
+      const last = values[values.length - 1];
+      const delta = last - base;
+
+      bars.forEach((bar, idx) => {
+        const v = values[idx];
+        const h = 10 + v * 80;
+        bar.style.height = h.toFixed(1) + '%';
+      });
+
+      metaLabel.textContent =
+        'Step 0 → ' +
+        steps +
+        ' · Δ=' +
+        (delta >= 0 ? '+' : '') +
+        (formatPercent(delta) / 100).toFixed(2);
+
+      let regime;
+      if (delta < 0.02) {
+        regime = 'KL-dominated: slow improvement';
+      } else if (delta < 0.15) {
+        regime = 'Moderate gain: gentle amplification';
+      } else {
+        regime = 'Strong gain: aggressive success concentration';
+      }
+
+      summary.innerHTML =
+        '<div class="summary-strong">' +
+        'After ' +
+        steps +
+        ' RL steps, success rises from ' +
+        formatPercent(base) +
+        '% to ' +
+        formatPercent(last) +
+        '%.' +
+        '</div>' +
+        '<div class="summary-detail">' +
+        'With K = ' +
+        K +
+        ' and KL = ' +
+        kl.toFixed(1) +
+        ', the simulated GRPO-style update ' +
+        (delta >= 0.02 ? 'concentrates more probability on passing trajectories.' : 'barely moves the policy because KL is strong or the signal is weak.') +
+        '</div>';
+
+      const approxSignal = (1 - Math.pow(1 - base, K)) - base;
+      pillSignal.textContent =
+        'Signal: Δbest-of-K ≈ ' +
+        (formatPercent(approxSignal) / 100).toFixed(2);
+      pillMode.textContent = 'Regime: ' + regime;
+    }
+
+    baseSlider.addEventListener('input', simulate);
+    groupSlider.addEventListener('input', simulate);
+    klSlider.addEventListener('input', simulate);
+
+    simulate();
+  </script>
+</body>
+</html>
+

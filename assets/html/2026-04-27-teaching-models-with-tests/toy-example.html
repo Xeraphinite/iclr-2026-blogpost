@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>RLVR Toy Example</title>
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #020617;
+      color: #e5e7eb;
+    }
+    .panel {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 18px 18px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background:
+        radial-gradient(circle at top left, rgba(56, 189, 248, 0.15), transparent 55%),
+        radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.18), transparent 60%),
+        #020617;
+      box-shadow: 0 16px 35px rgba(15, 23, 42, 0.8);
+    }
+    h2 {
+      margin: 0 0 4px;
+      font-size: 18px;
+      color: #f9fafb;
+    }
+    .subtitle {
+      margin: 0 0 14px;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.1fr);
+      gap: 14px;
+    }
+    @media (max-width: 760px) {
+      .layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+    .controls {
+      font-size: 13px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .control-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .control-label {
+      color: #e5e7eb;
+      font-weight: 500;
+    }
+    .control-caption {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 2px;
+    }
+    .toggle-group {
+      display: inline-flex;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      overflow: hidden;
+      background: rgba(15, 23, 42, 0.9);
+      font-size: 11px;
+    }
+    .toggle-group button {
+      padding: 4px 9px;
+      border: none;
+      background: transparent;
+      color: #e5e7eb;
+      cursor: pointer;
+    }
+    .toggle-group button.active {
+      background: linear-gradient(90deg, #38bdf8, #6366f1);
+      color: #0b1120;
+      font-weight: 600;
+    }
+    .slider-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 4px;
+    }
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 12px;
+    }
+    .slider-header span:last-child {
+      font-variant-numeric: tabular-nums;
+      color: #bfdbfe;
+    }
+    input[type="range"] {
+      width: 100%;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 5px;
+      border-radius: 999px;
+      background: #020617;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: #38bdf8;
+      border: 1px solid #e0f2fe;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.4);
+      cursor: pointer;
+      margin-top: -4.5px;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: #38bdf8;
+      border: 1px solid #e0f2fe;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.4);
+      cursor: pointer;
+    }
+    .prompt-box {
+      font-size: 12px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: rgba(15, 23, 42, 0.9);
+      margin-top: 6px;
+      color: #d1d5db;
+    }
+    .prompt-box strong {
+      color: #e5e7eb;
+    }
+    .answers {
+      padding: 10px 11px;
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.65);
+      background: rgba(15, 23, 42, 0.96);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 12px;
+    }
+    .answers-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 11px;
+      color: #9ca3af;
+    }
+    .answers-header strong {
+      color: #e5e7eb;
+      font-size: 12px;
+    }
+    .answer-row {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto auto;
+      gap: 6px;
+      align-items: center;
+      padding: 6px 7px;
+      border-radius: 9px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(55, 65, 81, 0.9);
+    }
+    .answer-label {
+      font-weight: 500;
+      color: #e5e7eb;
+      font-size: 11px;
+    }
+    .answer-text {
+      color: #d1d5db;
+      font-size: 11px;
+    }
+    .badge {
+      padding: 2px 6px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-variant-numeric: tabular-nums;
+    }
+    .badge-pass {
+      background: rgba(22, 163, 74, 0.18);
+      color: #bbf7d0;
+      border: 1px solid rgba(34, 197, 94, 0.8);
+    }
+    .badge-fail {
+      background: rgba(220, 38, 38, 0.14);
+      color: #fecaca;
+      border: 1px solid rgba(248, 113, 113, 0.85);
+    }
+    .badge-adv-pos {
+      background: rgba(22, 163, 74, 0.12);
+      color: #bbf7d0;
+      border: 1px solid rgba(34, 197, 94, 0.7);
+    }
+    .badge-adv-neg {
+      background: rgba(30, 64, 175, 0.18);
+      color: #bfdbfe;
+      border: 1px solid rgba(59, 130, 246, 0.75);
+    }
+    .bar {
+      width: 70px;
+      height: 7px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      overflow: hidden;
+    }
+    .bar-inner {
+      height: 100%;
+      width: 50%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #38bdf8, #22c55e);
+      transition: width 200ms ease-out;
+    }
+    .summary {
+      padding: 8px 10px 6px;
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px dashed rgba(148, 163, 184, 0.7);
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .summary strong {
+      color: #e5e7eb;
+    }
+    .summary span {
+      font-variant-numeric: tabular-nums;
+    }
+    .meta {
+      font-size: 10px;
+      color: #6b7280;
+      margin-top: 3px;
+    }
+  </style>
+</head>
+<body>
+  <div class="panel" aria-label="RLVR toy example simulator">
+    <h2>RLVR on a single math problem</h2>
+    <p class="subtitle">
+      See how grouped rewards turn pass/fail signals for a single prompt into advantages and a policy shift.
+    </p>
+    <div class="layout">
+      <section class="controls" aria-label="Toy example controls and prompt">
+        <div class="control-row">
+          <div>
+            <div class="control-label">Number of samples K</div>
+            <div class="control-caption">How many answers we draw for this one prompt.</div>
+          </div>
+          <div class="toggle-group" id="kToggle">
+            <button type="button" data-k="4" class="active">K = 4</button>
+            <button type="button" data-k="8">K = 8</button>
+          </div>
+        </div>
+        <div class="slider-row">
+          <div class="slider-header">
+            <span>Base pass rate</span>
+            <span id="baseRateLabel">50%</span>
+          </div>
+          <input
+            id="baseRate"
+            type="range"
+            min="0.2"
+            max="0.9"
+            step="0.05"
+            value="0.5"
+            aria-label="Base probability that an answer passes the verifier"
+          />
+          <div class="meta">
+            This sets how often the base model answers the prompt correctly before RL.
+          </div>
+        </div>
+        <div class="prompt-box">
+          <strong>Prompt:</strong><br />
+          “Compute the sum of the first 10 positive integers. Think step by step and answer with a number at the end.”<br /><br />
+          <strong>Verifier:</strong> parse the last number and check if it equals 55.
+        </div>
+        <div class="meta">
+          The simulation uses binary rewards (pass = 1, fail = 0) and group-normalised advantages, just like in the written toy example.
+        </div>
+      </section>
+      <section aria-label="Sampled answers and advantages">
+        <div class="answers">
+          <div class="answers-header">
+            <strong>Sampled answers for this prompt</strong>
+            <span id="groupMeta">K = 4 · passes: 2 / 4 · r̄ = 0.50</span>
+          </div>
+          <div id="answersContainer"></div>
+        </div>
+        <div class="summary" id="summaryBox">
+          <strong>How the update behaves</strong>
+          <span>
+            Positive-advantage trajectories are up-weighted, negative-advantage ones are down-weighted,
+            while a KL penalty (not shown) keeps the policy close to the reference model.
+          </span>
+        </div>
+      </section>
+    </div>
+  </div>
+  <script>
+    const baseRateSlider = document.getElementById('baseRate');
+    const baseRateLabel = document.getElementById('baseRateLabel');
+    const kToggle = document.getElementById('kToggle');
+    const groupMeta = document.getElementById('groupMeta');
+    const answersContainer = document.getElementById('answersContainer');
+    const summaryBox = document.getElementById('summaryBox');
+
+    let currentK = 4;
+
+    function formatPct(x) {
+      return Math.round(x * 100);
+    }
+
+    function sampleAnswers(K, pPass) {
+      const templates = [
+        { label: 'A', text: '1+2+...+10 = 55', passText: '55' },
+        { label: 'B', text: '1+2+...+10 = 50', passText: '50' },
+        { label: 'C', text: 'Explanation mostly right, arithmetic slip, answer 54', passText: '54' },
+        { label: 'D', text: 'Messy reasoning, final answer 55', passText: '55' },
+      ];
+      const answers = [];
+      for (let i = 0; i < K; i++) {
+        const isPass = Math.random() < pPass;
+        const tpl = templates[i % templates.length];
+        let text = tpl.text;
+        if (!isPass && tpl.passText === '55') {
+          text = tpl.text.replace('55', '50');
+        } else if (isPass && tpl.passText !== '55') {
+          text = tpl.text.replace(tpl.passText, '55');
+        }
+        answers.push({
+          idx: i,
+          label: String.fromCharCode(65 + (i % 26)),
+          text,
+          reward: isPass ? 1 : 0,
+        });
+      }
+      return answers;
+    }
+
+    function render() {
+      const pPass = parseFloat(baseRateSlider.value);
+      baseRateLabel.textContent = formatPct(pPass) + '%';
+
+      const K = currentK;
+      const answers = sampleAnswers(K, pPass);
+      const avgReward = answers.reduce((s, a) => s + a.reward, 0) / K;
+
+      const advs = answers.map(a => a.reward - avgReward);
+      const maxAdv = advs.length ? Math.max(...advs) : 0;
+      const minAdv = advs.length ? Math.min(...advs) : 0;
+
+      groupMeta.textContent =
+        'K = ' +
+        K +
+        ' · passes: ' +
+        answers.filter(a => a.reward > 0).length +
+        ' / ' +
+        K +
+        ' · r̄ = ' +
+        avgReward.toFixed(2);
+
+      answersContainer.innerHTML = '';
+      answers.forEach((a, i) => {
+        const adv = advs[i];
+        const row = document.createElement('div');
+        row.className = 'answer-row';
+
+        const label = document.createElement('div');
+        label.className = 'answer-label';
+        label.textContent = 'Answer ' + a.label;
+
+        const text = document.createElement('div');
+        text.className = 'answer-text';
+        text.textContent = a.text;
+
+        const rewardBadge = document.createElement('div');
+        rewardBadge.className = 'badge ' + (a.reward ? 'badge-pass' : 'badge-fail');
+        rewardBadge.textContent = a.reward ? 'pass (r = 1)' : 'fail (r = 0)';
+
+        const advContainer = document.createElement('div');
+        advContainer.style.display = 'flex';
+        advContainer.style.flexDirection = 'column';
+        advContainer.style.alignItems = 'flex-end';
+        advContainer.style.gap = '2px';
+
+        const advBadge = document.createElement('div');
+        advBadge.className =
+          'badge ' + (adv >= 0 ? 'badge-adv-pos' : 'badge-adv-neg');
+        const sign = adv > 0 ? '+' : adv < 0 ? '−' : '±';
+        advBadge.textContent =
+          'A = ' + sign + Math.abs(adv).toFixed(2);
+
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        const inner = document.createElement('div');
+        inner.className = 'bar-inner';
+        const width =
+          adv >= 0
+            ? 50 + Math.min(40, adv * 80 / (maxAdv || 1 || 1))
+            : 50 - Math.min(40, -adv * 80 / (Math.abs(minAdv) || 1));
+        inner.style.width = width.toFixed(1) + '%';
+        bar.appendChild(inner);
+
+        advContainer.appendChild(advBadge);
+        advContainer.appendChild(bar);
+
+        row.appendChild(label);
+        row.appendChild(text);
+        row.appendChild(rewardBadge);
+        row.appendChild(advContainer);
+
+        answersContainer.appendChild(row);
+      });
+
+      const passes = answers.filter(a => a.reward === 1).length;
+      const summaryLines = [];
+      summaryLines.push(
+        'Within this group, the average reward is r̄ = ' +
+          avgReward.toFixed(2) +
+          ', so answers with r = 1 get positive advantage and answers with r = 0 get negative advantage.'
+      );
+      if (passes === 0) {
+        summaryLines.push(
+          'Here, all answers fail, so every trajectory gets zero advantage: GRPO has no positive signal to push on.'
+        );
+      } else if (passes === K) {
+        summaryLines.push(
+          'Here, all answers pass, so advantages are near zero: the group is too easy to provide a learning signal.'
+        );
+      } else {
+        summaryLines.push(
+          'GRPO up-weights the ' +
+            passes +
+            ' passing trajectory/trajectories and down-weights the failing ones, nudging the policy toward reasoning paths that end in 55.'
+        );
+      }
+
+      summaryBox.innerHTML =
+        '<strong>How the update behaves</strong>' +
+        '<span>' +
+        summaryLines[0] +
+        '</span>' +
+        (summaryLines[1] ? '<span>' + summaryLines[1] + '</span>' : '');
+    }
+
+    baseRateSlider.addEventListener('input', render);
+    kToggle.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-k]');
+      if (!btn) return;
+      currentK = parseInt(btn.dataset.k, 10);
+      Array.from(kToggle.querySelectorAll('button')).forEach(b =>
+        b.classList.toggle('active', b === btn)
+      );
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
+
